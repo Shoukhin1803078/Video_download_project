@@ -7,20 +7,18 @@ import threading
 from io import BytesIO
 import base64
 
-
 st.set_page_config(
     page_title="Multi-Platform Video Downloader",
-    page_icon="",
-    layout="wide",  
-    initial_sidebar_state="auto"  
+    page_icon="🎥",
+    layout="wide",
+    initial_sidebar_state="auto"
 )
 
 st.markdown("""
 <style>
-    /* Base styles */
     .main-header {
         text-align: center;
-        padding: .5rem 1rem; 
+        padding: .5rem 1rem;
         background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
         color: white;
         border-radius: 10px;
@@ -46,8 +44,8 @@ st.markdown("""
         border-radius: 20px;
         height: 3rem;
         font-weight: bold;
-        font-size: 1rem; /* Increased font size for readability */
-        margin-bottom: 0.5rem; /* Added spacing for touch */
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
     }
     
     .download-section {
@@ -64,12 +62,12 @@ st.markdown("""
         border-left: 4px solid #2196f3;
     }
     
-    # .error-section {
-    #     background-color: #6c757d;
-    #     padding: 1rem;
-    #     border-radius: 10px;
-    #     border-left: 4px solid #f44336;
-    # }
+    .error-section {
+        background-color: #6c757d;
+        padding: 1rem;
+        border-radius: 10px;
+        border-left: 4px solid #f44336;
+    }
     
     .video-container {
         background-color: #6c757d;
@@ -83,16 +81,16 @@ st.markdown("""
     
     .video-container iframe {
         width: 100% !important;
-        height: 40vw !important; 
+        height: 40vw !important;
         max-height: 315px !important;
         border-radius: 8px;
     }
     
     .thumbnail-container {
-        background-color: #f8f9fa;
+        background-color: #6c757d;
         padding: 1rem;
         border-radius: 10px;
-        border: 2px solid #dee2e6;
+        border: 2px solid #6c757d;
         margin-bottom: 1rem;
         text-align: center;
         width: 100%;
@@ -100,17 +98,16 @@ st.markdown("""
     }
     
     .thumbnail-container img {
-        max-width: 100% !important; 
+        max-width: 100% !important;
         height: auto !important;
         max-height: 250px !important;
         border-radius: 8px;
     }
     
-   
     @media (max-width: 768px) {
         .main-header {
             padding: 1rem 0.5rem;
-            font-size: 0.9rem; 
+            font-size: 0.9rem;
         }
         
         .main-header h1 {
@@ -118,29 +115,29 @@ st.markdown("""
         }
         
         .stButton > button {
-            height: 2.5rem; 
+            height: 2.5rem;
             font-size: 0.9rem;
         }
         
         .video-container iframe {
-            height: 50vw !important; 
+            height: 50vw !important;
             max-height: 200px !important;
         }
         
+
+
         .thumbnail-container img {
-            max-height: 200px !important; 
+            max-height: 200px !important;
         }
         
         .download-section, .info-section, .error-section {
-            padding: 0.75rem; 
+            padding: 0.75rem;
         }
         
-      
         .stColumn {
             flex-direction: column !important;
         }
     }
-    
     
     @media (max-width: 480px) {
         .main-header h1 {
@@ -174,7 +171,6 @@ class StreamlitVideoDownloader:
         }
         
     def detect_platform(self, url):
-        """Detect which platform the URL belongs to"""
         if not url:
             return 'unknown'
             
@@ -186,19 +182,17 @@ class StreamlitVideoDownloader:
         return 'unknown'
     
     def get_platform_badge(self, platform):
-        """Get HTML badge for platform"""
         platform_info = {
-            'youtube': ('YouTube', 'youtube'),
-            'facebook': ('Facebook', 'facebook'),
-            'linkedin': ('LinkedIn', 'linkedin'),
-            'unknown': ('Unknown', 'unknown')
+            'youtube': ('📺 YouTube', 'youtube'),
+            'facebook': ('📘 Facebook', 'facebook'),
+            'linkedin': ('💼 LinkedIn', 'linkedin'),
+            'unknown': ('❓ Unknown', 'unknown')
         }
         
-        label, css_class = platform_info.get(platform, ('Unknown', 'unknown'))
+        label, css_class = platform_info.get(platform, ('❓ Unknown', 'unknown'))
         return f'<span class="platform-badge {css_class}">{label}</span>'
     
     def get_platform_specific_options(self, platform):
-        """Get platform-specific yt-dlp options"""
         base_opts = {
             'quiet': True,
             'no_warnings': True,
@@ -222,7 +216,6 @@ class StreamlitVideoDownloader:
         return base_opts
     
     def format_duration(self, seconds):
-        """Format duration from seconds to readable format"""
         if not seconds:
             return "Unknown"
         
@@ -238,7 +231,6 @@ class StreamlitVideoDownloader:
             return f"{seconds}s"
     
     def get_video_info(self, url, platform):
-        """Get video information"""
         try:
             ydl_opts = self.get_platform_specific_options(platform)
             
@@ -249,9 +241,7 @@ class StreamlitVideoDownloader:
             return None, str(e)
     
     def download_video(self, url, platform, quality, format_type, temp_dir):
-        """Download video and return file path"""
         try:
-            # Get platform-specific options
             ydl_opts = self.get_platform_specific_options(platform)
             ydl_opts['outtmpl'] = os.path.join(temp_dir, '%(title)s.%(ext)s')
             
@@ -265,7 +255,6 @@ class StreamlitVideoDownloader:
                     }],
                 })
             else:
-                # Video format selection
                 if platform == 'youtube':
                     if quality == 'best':
                         format_selector = 'best[ext=mp4]/best'
@@ -283,11 +272,9 @@ class StreamlitVideoDownloader:
                     'format': format_selector,
                 })
             
-            # Download
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=True)
                 
-                # Find downloaded file
                 for file in os.listdir(temp_dir):
                     if file.endswith(('.mp4', '.mp3', '.webm', '.mkv', '.avi', '.mov')):
                         return os.path.join(temp_dir, file), info, None
@@ -298,10 +285,8 @@ class StreamlitVideoDownloader:
             return None, None, str(e)
 
 def main():
-    # Initialize downloader
     downloader = StreamlitVideoDownloader()
     
-    # Header
     st.markdown("""
     <div class="main-header">
         <h1>Multi-Platform Video Downloader</h1>
@@ -309,25 +294,21 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # Initialize session state
     if 'video_info' not in st.session_state:
         st.session_state.video_info = None
     if 'download_ready' not in st.session_state:
         st.session_state.download_ready = False
     
-    # Sidebar
     with st.sidebar:
         st.header("🎛️ Settings")
         
-        # Quality selection
         quality = st.selectbox(
             "📊 Video Quality",
             options=['best', '1080', '720', '480', '360', '240', '144'],
             format_func=lambda x: 'Best Available' if x == 'best' else f'{x}p',
-            index=2  # Default to 720p
+            index=2
         )
         
-        # Format selection
         format_type = st.selectbox(
             "📦 Format",
             options=['mp4', 'mp3'],
@@ -335,16 +316,15 @@ def main():
         )
         
         st.markdown("---")
+        url = "https://www.linkedin.com/in/md-al-amin-tokder/"
+        st.write("Made by ❤️[Md Al Amin Tokder](%s)" % url)
+
         
-  
     
-    # Main content
-    # Use container to ensure proper stacking on mobile
     with st.container():
         col1, col2 = st.columns([1, 1], gap="medium")
         
         with col1:
-            # URL input
             st.markdown("### 🔗 Enter Video URL")
             url = st.text_input(
                 "Paste your video URL here:",
@@ -352,7 +332,6 @@ def main():
                 label_visibility="collapsed"
             )
             
-            # Platform detection
             if url:
                 platform = downloader.detect_platform(url)
                 badge_html = downloader.get_platform_badge(platform)
@@ -361,7 +340,6 @@ def main():
                 if platform == 'unknown':
                     st.error("❌ Unsupported platform. Please use YouTube, Facebook, or LinkedIn URLs.")
             
-            # Action buttons
             col_info, col_download = st.columns(2)
             
             with col_info:
@@ -383,7 +361,6 @@ def main():
                 if st.button("⬇️ Download Video", disabled=download_disabled):
                     platform = downloader.detect_platform(url)
                     
-                    # Create temporary directory
                     temp_dir = tempfile.mkdtemp()
                     
                     progress_bar = st.progress(0)
@@ -403,18 +380,16 @@ def main():
                             progress_bar.progress(100)
                             status_text.text("✅ Download completed!")
                             
-                            # Prepare file for download
                             with open(file_path, 'rb') as file:
                                 file_data = file.read()
                             
                             filename = os.path.basename(file_path)
-                            file_size = len(file_data) / (1024 * 1024)  # MB
+                            file_size = len(file_data) / (1024 * 1024)
                             
                             st.success(f"🎉 Download ready! File size: {file_size:.2f} MB")
                             
-                            # Download button
                             st.download_button(
-                                label="💾 Download in Device",
+                                label="💾 Download to Computer",
                                 data=file_data,
                                 file_name=filename,
                                 mime="application/octet-stream"
@@ -423,7 +398,6 @@ def main():
                     except Exception as e:
                         st.error(f"❌ Unexpected error: {str(e)}")
                     finally:
-                        # Cleanup
                         import shutil
                         try:
                             shutil.rmtree(temp_dir)
@@ -431,18 +405,14 @@ def main():
                             pass
         
         with col2:
-           
             if url and st.session_state.video_info:
                 info = st.session_state.video_info
                 platform = downloader.detect_platform(url)
                 
-               
                 st.markdown("### 🎬 Video Preview")
                 
                 try:
-                    
                     if platform == 'youtube':
-                        
                         video_id = None
                         if 'youtube.com/watch?v=' in url:
                             video_id = url.split('watch?v=')[1].split('&')[0]
@@ -450,7 +420,6 @@ def main():
                             video_id = url.split('youtu.be/')[1].split('?')[0]
                         
                         if video_id:
-                            # Embed YouTube video in a fixed-size container
                             st.markdown("""
                             <div class="video-container">
                             """, unsafe_allow_html=True)
@@ -461,7 +430,6 @@ def main():
                         else:
                             st.info("📺 YouTube video detected but unable to preview")
                     
-                    # For Facebook videos, show thumbnail if available
                     elif platform == 'facebook':
                         thumbnail_url = info.get('thumbnail')
                         if thumbnail_url:
@@ -477,7 +445,6 @@ def main():
                             st.info("📘 Facebook video detected. Click link to view on Facebook.")
                             st.markdown(f"[🔗 View on Facebook]({url})")
                     
-                    # For LinkedIn videos, show thumbnail if available
                     elif platform == 'linkedin':
                         thumbnail_url = info.get('thumbnail')
                         if thumbnail_url:
@@ -498,33 +465,30 @@ def main():
                 
                 st.markdown("---")
                 
-                # Video Information Section
                 st.markdown("""
                 <div class="info-section">
                     <h3>📹 Video Information</h3>
                 </div>
                 """, unsafe_allow_html=True)
                 
-                st.markdown(f"** Title:** {info.get('title', 'N/A')}")
+                st.markdown(f"**📝 Title:** {info.get('title', 'N/A')}")
                 
-                # Platform-specific info
                 if platform == 'youtube':
-                    st.markdown(f"** Channel:** {info.get('uploader', 'N/A')}")
+                    st.markdown(f"**👤 Channel:** {info.get('uploader', 'N/A')}")
                     views = info.get('view_count', 0)
                     if views:
-                        st.markdown(f"** Views:** {views:,}")
+                        st.markdown(f"**👀 Views:** {views:,}")
                 else:
-                    st.markdown(f"** Uploader:** {info.get('uploader', 'N/A')}")
+                    st.markdown(f"**👤 Uploader:** {info.get('uploader', 'N/A')}")
                 
                 duration = downloader.format_duration(info.get('duration', 0))
-                st.markdown(f"**⏱ Duration:** {duration}")
+                st.markdown(f"**⏱️ Duration:** {duration}")
                 
                 upload_date = info.get('upload_date', 'N/A')
                 if upload_date != 'N/A' and len(upload_date) == 8:
                     formatted_date = f"{upload_date[:4]}-{upload_date[4:6]}-{upload_date[6:]}"
                     st.markdown(f"**📅 Upload Date:** {formatted_date}")
                 
-                # Available formats
                 formats = info.get('formats', [])
                 if formats:
                     video_formats = set()
@@ -535,7 +499,7 @@ def main():
                     if video_formats:
                         sorted_formats = sorted(video_formats, reverse=True)
                         format_text = ", ".join([f"{h}p" for h in sorted_formats])
-                        st.markdown(f"** Available:** {format_text}")
+                        st.markdown(f"**📊 Available:** {format_text}")
             else:
                 st.markdown("""
                 <div class="info-section">
@@ -549,11 +513,10 @@ def main():
                 </div>
                 """, unsafe_allow_html=True)
     
-    # Footer
     st.markdown("---")
     st.markdown("""
     <div style="text-align: center; color: #6c757d; padding: 1rem 0;">
-        <p>Multi-Platform Video Downloader | Made by Md Al Amin Tokder</p>
+        <p>🎥 Multi-Platform Video Downloader | Made By Md Al Amin Tokder</p>
         <p><small>Supports YouTube, Facebook, and LinkedIn</small></p>
     </div>
     """, unsafe_allow_html=True)
